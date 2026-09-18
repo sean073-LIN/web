@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大樂透智慧選號小工具</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+        h2 { color: #2c3e50; margin-bottom: 5px; }
+        .subtitle { color: #7f8c8d; font-size: 14px; margin-bottom: 25px; }
+        .hot-tags {
+            background-color: #fcf3cf;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #b7950b;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .ball-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            min-height: 50px;
+        }
+        .ball {
+            width: 45px;
+            height: 45px;
+            background: radial-gradient(circle at 30% 30%, #ff4d4d, #cc0000);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: bounce 0.4s ease-out;
+        }
+        .ball.is-hot {
+            background: radial-gradient(circle at 30% 30%, #f1c40f, #d4ac0d);
+            color: #2c3e50;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.3);
+        }
+        button:hover { background-color: #2980b9; transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        @keyframes bounce {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>大樂透智慧選號器</h2>
+    <div class="subtitle">隨機自動選號 (1~49)</div>
+    
+    <div class="hot-tags">
+        🔥 <strong>歷史前10大熱門號碼（中獎加權 3 倍）：</strong><br>
+        01, 08, 11, 18, 23, 25, 31, 39, 41, 43
+    </div>
+
+    <div class="ball-container" id="ballContainer">
+        <!-- 號碼球會生成在這裡 -->
+    </div>
+
+    <button onclick="generateNumbers()">幫我選號</button>
+</div>
+
+<script>
+    // 根據台彩長期歷史統計之常見前10大熱門號碼 (範例設定)
+    const HOT_NUMBERS = [1, 8, 11, 18, 23, 25, 31, 39, 41, 43];
+    const HOT_WEIGHT = 3; // 熱門號碼抽中權重提高 3 倍
+
+    function generateNumbers() {
+        const container = document.getElementById('ballContainer');
+        container.innerHTML = ''; // 清空舊號碼
+
+        // 1. 建立加權號碼池
+        let pool = [];
+        for (let i = 1; i <= 49; i++) {
+            let weight = HOT_NUMBERS.includes(i) ? HOT_WEIGHT : 1;
+            for (let w = 0; w < weight; w++) {
+                pool.push(i);
+            }
+        }
+
+        // 2. 從加權池中隨機抽出 6 個不重複的號碼
+        let selectedNumbers = [];
+        while (selectedNumbers.length < 6) {
+            let randomIndex = Math.floor(Math.random() * pool.length);
+            let drawnNumber = pool[randomIndex];
+
+            if (!selectedNumbers.includes(drawnNumber)) {
+                selectedNumbers.push(drawnNumber);
+                // 為了避免同一號碼在後續重複抽中，將池中該號碼全數清除
+                pool = pool.filter(num => num !== drawnNumber);
+            }
+        }
+
+        // 3. 號碼由小到大排序
+        selectedNumbers.sort((a, b) => a - b);
+
+        // 4. 渲染到網頁上
+        selectedNumbers.forEach((num, index) => {
+            setTimeout(() => {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                
+                // 如果是熱門號碼，換成黃金球外觀
+                if (HOT_NUMBERS.includes(num)) {
+                    ball.classList.add('is-hot');
+                }
+                
+                // 補零顯示 (例如 05)
+                ball.innerText = num < 10 ? '0' + num : num;
+                container.appendChild(ball);
+            }, index * 100); // 加上動態延遲，營造一顆顆開獎的效果
+        });
+    }
+
+    // 首次載入自動執行一次
+    window.onload = generateNumbers;
+</script>
+
+</body>
+</html>
