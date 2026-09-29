@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全方位退休金與達標資產逆算計算機</title>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f0f4f8; padding: 20px; display: flex; justify-content: center; }
+        .box { background: white; padding: 25px; border-radius: 12px; max-width: 520px; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        h2 { text-align: center; color: #2c3e50; margin-top: 0; font-size: 22px; }
+        .block { background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 8px; margin-bottom: 12px; }
+        .block h4 { margin: 0 0 10px 0; color: #475569; border-left: 4px solid #3498db; padding-left: 8px; font-size: 15px; }
+        label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; color: #334155; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        input:focus { border-color: #3498db; outline: none; }
+        button { width: 100%; padding: 14px; background-color: #27ae60; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        button:hover { background-color: #219653; }
+        .res-area { margin-top: 20px; padding: 18px; background: #fff; border: 2px solid #2c3e50; border-radius: 8px; display: none; }
+        .total-money { font-size: 18px; font-weight: bold; color: #166534; background: #f0fdf4; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #bbf7d0; margin-bottom: 15px; }
+        .plan { border-left: 4px solid #3498db; padding-left: 10px; margin-bottom: 12px; font-size: 14px; background: #f1f5f9; padding: 10px; border-radius: 0 6px 6px 0; }
+        .num { font-weight: bold; color: #2563eb; font-size: 16px; }
+        .gap-box { background: #fff5f5; border: 1px solid #feb2b2; border-left: 4px solid #e53e3e; padding: 12px; border-radius: 0 6px 6px 0; margin-top: 15px; font-size: 14px; line-height: 1.6; }
+        .success-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #38a169; padding: 12px; border-radius: 0 6px 6px 0; margin-top: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>🎯 退休金整合與達標資產逆算計算機</h2>
+    
+    <!-- 個人投資 -->
+    <div class="box-input-group">
+        <div class="block">
+            <h4>第一部分：目前投資理財設定</h4>
+            <label>目前每月預計存多少錢 (元)：</label>
+            <input type="number" id="inpSave" value="10000">
+            
+            <label>投資年化報酬率 (%)：</label>
+            <input type="number" id="inpRate" value="6.0" step="0.1">
+            
+            <label>預計累積投資幾年：</label>
+            <input type="number" id="inpYears" value="25">
+            
+            <label>退休後資產年化報酬率 (光領利息用, %)：</label>
+            <input type="number" id="inpRetireRate" value="4.0" step="0.1">
+        </div>
+
+        <!-- 國家保障 -->
+        <div class="block" style="background: #fff7ed; border-color: #fed7aa;">
+            <h4 style="color: #c2410c; border-left-color: #ea580c;">第二部分：國家勞保與勞退設定</h4>
+            <label>目前或預估平均月薪 (元)：</label>
+            <input type="number" id="inpSalary" value="45800">
+            
+            <label>預估退休時勞保總年資 (年)：</label>
+            <input type="number" id="inpLaborYears" value="30">
+        </div>
+
+        <!-- 退休終極目標 -->
+        <div class="block" style="background: #f3e8ff; border-color: #e9d5ff;">
+            <h4 style="color: #6b21a8; border-left-color: #a855f7;">第三部分：退休月領終極目標</h4>
+            <label style="color: #6b21a8;">🎯 我希望退休後每個月總共能領到多少錢 (元)：</label>
+            <input type="number" id="inpTarget" value="60000" style="border-color: #c084fc;">
+        </div>
+    </div>
+
+    <button id="btnCalc">🚀 開始全方位試算與目標逆算</button>
+
+    <!-- 結果 -->
+    <div class="res-area" id="resBlock">
+        <h3 style="margin-top:0; text-align:center; color:#2c3e50;">📊 退休綜合試算報告</h3>
+        
+        <div class="total-money">
+            依照目前設定，退休時能存到：<br>
+            <span id="txtTotalAsset" style="font-size:22px; color:#15803d;">0</span> 元
+        </div>
+
+        <div class="plan" style="border-left-color: #ea580c; background: #fff7ed;">
+            <strong>🏛️ 國家雙軌月退金預估（安全底牌）：</strong><br>
+            • 勞保老年年金：<span id="txtLabor" style="color:#ea580c; font-weight:bold;">0</span> 元 / 月<br>
+            • 勞退新制專戶月退：<span id="txtFund" style="color:#ea580c; font-weight:bold;">0</span> 元 / 月<br>
+            ➔ 國家每月發放小計：<span id="txtGovTotal" style="color:#ba1a1a; font-weight:bold;">0</span> 元 / 月
+        </div>
+
+        <div class="plan" style="border-left-color: #16a34a;">
+            <strong>🌴 現狀方案 A：自存「光領利息(4%)」+ 國家月退</strong><br>
+            ➔ 目前設定每月總共可領：<span class="num" id="planA1">0</span> 元 / 月<br>
+            <span style="font-size:11px; color:#166534;">(自存本金完好不動，可以安心活到 100 歲)</span>
+        </div>
+
+        <!-- 逆算缺口結果區 -->
+        <div id="gapResultArea"></div>
+    </div>
+</div>
+
+<script>
+document.getElementById('btnCalc').addEventListener('click', function() {
+    // 1. 安全抓取數值
+    const vSave = parseFloat(document.getElementById('inpSave').value) || 0;
+    const vRate = (parseFloat(document.getElementById('inpRate').value) || 0) / 100;
+    const vYears = parseInt(document.getElementById('inpYears').value) || 0;
+    const vRetireRate = (parseFloat(document.getElementById('inpRetireRate').value) || 0) / 100;
+    const vSalary = parseFloat(document.getElementById('inpSalary').value) || 0;
+    const vLaborYears = parseFloat(document.getElementById('inpLaborYears').value) || 0;
+    const vTarget = parseFloat(document.getElementById('inpTarget').value) || 0;
+
+    // 2. 計算目前自存複利總額
+    let totalAsset = 0;
+    if (vYears > 0 && vSave > 0) {
+        const r = vRate / 12;
+        const n = vYears * 12;
+        if (r === 0) {
+            totalAsset = vSave * n;
+        } else {
+            totalAsset = vSave * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+        }
+    }
+
+    // 3. 計算勞保老年年金
+    const laborA = (vSalary * vLaborYears * 0.00775) + 3000;
+    const laborB = vSalary * vLaborYears * 0.0155;
+    const laborMonthly = Math.max(laborA, laborB);
+
+    // 4. 計算勞退新制 (預估基金回報 3%)
+    let totalFund = 0;
+    const boss提撥 = vSalary * 0.06;
+    if (vYears > 0 && boss提撥 > 0) {
+        const fr = 0.03 / 12;
+        const fn = vYears * 12;
+        totalFund = boss提撥 * ((Math.pow(1 + fr, fn) - 1) / fr) * (1 + fr);
+    }
+    const fundMonthly = totalFund / (20 * 12);
+
+    // 國家月退總和
+    const govTotal = laborMonthly + fundMonthly;
+
+    // 目前設定下的方案 A 月領總和
+    const planA1_Interest = (totalAsset * vRetireRate) / 12;
+    const totalPlanA1 = planA1_Interest + govTotal;
+
+    // 5. 逆算目標差距
+    const targetInterestNeed = vTarget - govTotal;
+    
+    let gapHTML = "";
+    if (totalPlanA1 >= vTarget) {
+        gapHTML = `<div class="success-box">
+            <strong>🎉 恭喜！您目前的理財規劃已達標！</strong><br>
+            目前預估月領 (${Math.round(totalPlanA1).toLocaleString()} 元) 已經超越您的終極目標 (${Math.round(vTarget).toLocaleString()} 元)。請繼續保持良好的投資紀律！
+        </div>`;
+    } else {
+        // 達到目標所需的總資產 = 理想自存利息缺口 * 12個月 / 退休後年化報酬率
+        let requiredAsset = 0;
+        if (vRetireRate > 0 && targetInterestNeed > 0) {
+            requiredAsset = (targetInterestNeed * 12) / vRetireRate;
+        }
+        
+        // 逆推每月總共需要存多少錢
+        let requiredMonthlySave = 0;
+        if (vYears > 0 && requiredAsset > 0) {
+            const r = vRate / 12;
+            const n = vYears * 12;
+            if (r === 0) {
+                requiredMonthlySave = requiredAsset / n;
+            } else {
+                requiredMonthlySave = requiredAsset / (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
+            }
+        }
+        
+        // 還需要增加的每月投資額
+        const needToIncrease = Math.max(0, requiredMonthlySave - vSave);
+
+        gapHTML = `<div class="gap-box">
+            <strong>⚠️ 距離設定的月領目標還有一點缺口：</strong><br>
+            • 月領目標：<span style="color:#e53e3e; font-weight:bold;">${Math.round(vTarget).toLocaleString()}</span> 元<br>
+            • 目前預估：<span>${Math.round(totalPlanA1).toLocaleString()}</span> 元<br>
+            • 每月尚差：<span style="color:#e53e3e; font-weight:bold;">${Math.round(vTarget - totalPlanA1).toLocaleString()}</span> 元 / 月<br>
+            <hr style="border:0; border-top:1px dashed #feb2b2; margin:8px 0;">
+            <strong>💡 逆算行動指南 (本金不動方案)：</strong><br>
+            若要在退休時穩穩月領 ${Math.round(vTarget).toLocaleString()} 元：<br>
+            ➔ 您現在每個月需要<b>【再增加投資】</b>：<span style="font-size:18px; color:#dc2626; font-weight:bold;">${Math.round(needToIncrease).toLocaleString()}</span> 元<br>
+            ➔ 調整後，每月總投資額需達到：<b>${Math.round(requiredMonthlySave).toLocaleString()}</b> 元<br>
+            <hr style="border:0; border-top:1px dashed #feb2b2; margin:8px 0;">
+            <strong>💰 達標後可以存到的金額：</strong><br>
+            當您依照指南補足缺口，在退休那一刻，你個人的自存總資產將會成功存到：<br>
+            <span style="font-size:20px; color:#15803d; font-weight:bold;">${Math.round(requiredAsset).toLocaleString()} 元</span>
+        </div>`;
+    }
+
+    // 6. 渲染到網頁
+    document.getElementById('txtTotalAsset').innerText = Math.round(totalAsset).toLocaleString();
+    document.getElementById('txtLabor').innerText = Math.round(laborMonthly).toLocaleString();
+    document.getElementById('txtFund').innerText = Math.round(fundMonthly).toLocaleString();
+    document.getElementById('txtGovTotal').innerText = Math.round(govTotal).toLocaleString();
+    document.getElementById('planA1').innerText = Math.round(totalPlanA1).toLocaleString();
+    document.getElementById('gapResultArea').innerHTML = gapHTML;
+
+    document.getElementById('resBlock').style.display = 'block';
+});
+</script>
+
+</body>
+</html>
